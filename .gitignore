@@ -1,0 +1,31 @@
+# Dependencies
+node_modules/
+
+# Local environment
+.env
+.env.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+
+# Build artifacts
+coverage/
+dist/
+
+# SQLite db
+*.sqlite
+*.sqlite-journal
+
+# Misc
+*.log

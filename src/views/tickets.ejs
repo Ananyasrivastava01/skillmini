@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Tickets</title>
+  <link rel="stylesheet" href="/styles.css" />
+  <script>
+    async function quickLogin(email, password) {
+      try {
+        const r = await fetch('/api/login', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({email, password})});
+        const j = await r.json();
+        if (!r.ok || !j.token) {
+          alert('Login failed: ' + JSON.stringify(j));
+          return;
+        }
+        localStorage.setItem('token', j.token);
+        location.reload();
+      } catch (e) {
+        alert('Login error: ' + e.message);
+      }
+    }
+    async function loginSeed() { return quickLogin('user@example.com','password'); }
+    async function loginAdmin() { return quickLogin('admin@mail.com','admin123'); }
+    function logout(){ localStorage.removeItem('token'); location.reload(); }
+    async function loadTickets() {
+      const token = localStorage.getItem('token');
+      const url = new URL(location.origin + '/api/tickets');
+      const r = await fetch(url, { headers: token? { Authorization: 'Bearer ' + token } : {} });
+      const j = await r.json();
+      const tbody = document.querySelector('tbody');
+      tbody.innerHTML = '';
+      (j.items||[]).forEach(t => {
+        const tr = document.createElement('tr');
+        const breached = t.sla_due_at && new Date(t.sla_due_at) < new Date();
+        const pill = breached ? '<span class="pill danger">SLA Breached</span>' : '<span class="pill ok">On Track</span>';
+        tr.innerHTML = `<td class="muted">#${t.id}</td><td><a class="link" href="/tickets/${t.id}">${t.title}</a></td><td>${t.status}</td><td>${t.priority}</td><td>${t.sla_due_at || ''} ${pill}</td>`;
+        tbody.appendChild(tr);
+      });
+      document.getElementById('authstate').textContent = token ? 'Authenticated' : 'Anonymous';
+    }
+    document.addEventListener('DOMContentLoaded', loadTickets);
+  </script>
+  </head>
+<body>
+  <div class="nav">
+    <div class="brand"><span class="badge">H</span> HelpDesk Mini</div>
+    <div class="actions">
+      <span id="authstate" class="pill"></span>
+      <a href="/tickets/new">New Ticket</a>
+      <button onclick="loginSeed()">Quick Login (User)</button>
+      <button onclick="loginAdmin()">Quick Login (Admin)</button>
+      <button onclick="logout()">Logout</button>
+    </div>
+  </div>
+  <div class="container grid">
+    <div class="card">
+      <h2 class="section-title">Your Tickets</h2>
+      <table>
+        <thead><tr><th>ID</th><th>Title</th><th>Status</th><th>Priority</th><th>SLA</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div class="footer-space"></div>
+  </div>
+
+</body>
+</html>
+
+

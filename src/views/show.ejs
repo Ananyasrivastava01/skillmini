@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Ticket</title>
+  <link rel="stylesheet" href="/styles.css" />
+  <script>
+    function getRole(){
+      const t = localStorage.getItem('token');
+      if(!t) return null;
+      try{ const payload = JSON.parse(atob(t.split('.')[1]||'')); return payload.role || null; }catch{ return null; }
+    }
+    let currentRole = null;
+    async function loadTicket(){
+      currentRole = getRole();
+      const id = location.pathname.split('/').pop();
+      const token = localStorage.getItem('token');
+      const r = await fetch('/api/tickets/'+id, { headers: token? { Authorization: 'Bearer '+token } : {} });
+      const j = await r.json();
+      if(!j.ticket){ document.body.innerText = JSON.stringify(j); return; }
+      document.getElementById('title').innerText = j.ticket.title;
+      document.getElementById('meta').innerText = `#${j.ticket.id} • ${j.ticket.status} • ${j.ticket.priority} • SLA ${j.ticket.sla_due_at}`;
+      const comments = document.getElementById('comments');
+      comments.innerHTML = '';
+      (j.comments||[]).forEach(c => {
+        const div = document.createElement('div');
+        div.className = 'comment';
+        div.textContent = c.body + ' — ' + c.created_at;
+        comments.appendChild(div);
+      });
+      const timeline = document.getElementById('timeline');
+      timeline.innerHTML = '';
+      (j.timeline||[]).forEach(ev => {
+        const li = document.createElement('li');
+        li.textContent = `${ev.created_at} • ${ev.action}`;
+        timeline.appendChild(li);
+      });
+      document.getElementById('version').value = j.ticket.version;
+
+      const isPriv = currentRole === 'admin' || currentRole === 'agent';
+      document.getElementById('edit_status').disabled = !isPriv;
+      document.getElementById('edit_priority').disabled = !isPriv;
+      document.getElementById('priv_hint').style.display = isPriv ? 'none' : 'block';
+    }
+    async function addComment(e){
+      e.preventDefault();
+      const id = location.pathname.split('/').pop();
+      const token = localStorage.getItem('token');
+      const body = document.getElementById('comment').value;
+      const r = await fetch('/api/tickets/'+id+'/comments', {method:'POST', headers:{'Content-Type':'application/json','Idempotency-Key':crypto.randomUUID(), ...(token? { Authorization:'Bearer '+token } : {})}, body: JSON.stringify({body})});
+      await r.json();
+      document.getElementById('comment').value = '';
+      loadTicket();
+    }
+    async function save(e){
+      e.preventDefault();
+      const id = location.pathname.split('/').pop();
+      const token = localStorage.getItem('token');
+      const data = {
+        title: document.getElementById('edit_title').value,
+        description: document.getElementById('edit_description').value,
+        status: document.getElementById('edit_status').value,
+        priority: document.getElementById('edit_priority').value,
+        version: Number(document.getElementById('version').value)
+      };
+      const r = await fetch('/api/tickets/'+id, {method:'PATCH', headers:{'Content-Type':'application/json', ...(token? { Authorization:'Bearer '+token } : {})}, body: JSON.stringify(data)});
+      const j = await r.json();
+      if(j.error && j.error.code==='CONFLICT'){ alert('Stale update (409). Reloading.'); }
+      await loadTicket();
+    }
+    document.addEventListener('DOMContentLoaded', loadTicket);
+  </script>
+</head>
+<body>
+  <div class="nav">
+    <div class="brand"><span class="badge">H</span> HelpDesk Mini</div>
+    <div class="actions">
+      <a href="/tickets">All Tickets</a>
+    </div>
+  </div>
+  <div class="container grid">
+    <div class="card">
+      <h2 id="title"></h2>
+      <div class="muted" id="meta"></div>
+    </div>
+    <div class="grid">
+      <div class="card">
+        <h3 class="section-title">Comments</h3>
+        <div id="comments" class="stack"></div>
+        <form class="row" onsubmit="addComment(event)">
+          <div class="col"><input id="comment" placeholder="Write a comment" required /></div>
+          <div><button class="btn">Add Comment</button></div>
+        </form>
+      </div>
+      <div class="card">
+        <h3 class="section-title">Edit</h3>
+        <div id="priv_hint" class="muted" style="display:none">Status and priority are editable by agents/admins only.</div>
+        <form class="stack" onsubmit="save(event)">
+          <div class="row">
+            <div class="col"><label>Title</label><input id="edit_title" placeholder="Title" /></div>
+            <div class="col"><label>Status</label><select id="edit_status"><option>open</option><option>in_progress</option><option>resolved</option><option>closed</option></select></div>
+            <div class="col"><label>Priority</label><select id="edit_priority"><option>low</option><option selected>medium</option><option>high</option><option>urgent</option></select></div>
+          </div>
+          <label>Description</label>
+          <input id="edit_description" placeholder="Description" />
+          <input type="hidden" id="version" />
+          <button class="btn">Save Changes</button>
+        </form>
+      </div>
+      <div class="card">
+        <h3 class="section-title">Timeline</h3>
+        <ul id="timeline" class="stack"></ul>
+      </div>
+    </div>
+    <div class="footer-space"></div>
+  </div>
+</body>
+</html>
+
+

@@ -1,0 +1,45 @@
+:root{--bg:#0e1320;--surface:#141a2f;--muted:#8ea2c8;--text:#e9eefc;--line:rgba(255,255,255,.07);--glow:rgba(106,227,255,.14);--focus:#62d3ff;--accent:#6aa0ff;--ok:#37d39d;--danger:#ff6b6b}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;background:radial-gradient(1200px 700px at 20% -10%,rgba(98,211,255,.08),transparent),linear-gradient(180deg,#0e1320,#0b1020);color:var(--text)}
+
+/* Layout */
+.container{max-width:1100px;margin:32px auto;padding:0 20px}
+.nav{display:flex;align-items:center;justify-content:space-between;gap:12px;position:sticky;top:0;padding:12px 20px;background:rgba(20,26,47,.7);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);z-index:5}
+.brand{display:flex;gap:10px;align-items:center;font-weight:700;letter-spacing:.2px}
+.badge{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--focus));display:inline-flex;align-items:center;justify-content:center;color:#071018;font-weight:900}
+
+/* Actions */
+.actions a,.actions button,.btn{appearance:none;border:none;cursor:pointer;border-radius:10px;padding:10px 14px;background:rgba(255,255,255,.04);color:var(--text);border:1px solid var(--line);text-decoration:none;transition:.18s ease;display:inline-flex;align-items:center;gap:8px}
+.actions a:hover,.actions button:hover,.btn:hover{border-color:var(--focus);box-shadow:0 0 0 3px var(--glow);transform:translateY(-1px)}
+
+/* Cards and grid */
+.grid{display:grid;grid-template-columns:1fr;gap:18px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;box-shadow:0 10px 28px rgba(0,0,0,.25)}
+.section-title{margin:4px 0 12px}
+.muted{color:var(--muted)}
+.footer-space{height:20px}
+
+/* Tables */
+table{width:100%;border-collapse:separate;border-spacing:0 10px}
+th,td{padding:12px 14px}
+thead th{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.08em}
+tbody tr{background:rgba(255,255,255,.03);border:1px solid var(--line)}
+tbody tr td:first-child{border-top-left-radius:10px;border-bottom-left-radius:10px}
+tbody tr td:last-child{border-top-right-radius:10px;border-bottom-right-radius:10px}
+a.link{color:var(--focus);text-decoration:none}
+a.link:hover{text-decoration:underline}
+
+/* Forms */
+label{display:block;margin:8px 0 6px;color:var(--muted)}
+input,select,textarea{width:100%;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,.03);border:1px solid var(--line);color:var(--text);outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--focus);box-shadow:0 0 0 3px var(--glow)}
+.row{display:flex;gap:12px;flex-wrap:wrap}
+.row .col{flex:1 1 260px}
+.stack{display:flex;flex-direction:column;gap:10px}
+
+/* Pills / badges */
+.pill{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.04);font-size:12px}
+.pill.ok{border-color:rgba(55,211,157,.4);background:rgba(55,211,157,.08)}
+.pill.danger{border-color:rgba(255,107,107,.4);background:rgba(255,107,107,.08)}
+

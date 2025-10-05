@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>New Ticket</title>
+  <link rel="stylesheet" href="/styles.css" />
+  <script>
+    async function submitForm(e){
+      e.preventDefault();
+      const data = {
+        title: document.getElementById('title').value,
+        description: document.getElementById('description').value,
+        priority: document.getElementById('priority').value
+      };
+      const token = localStorage.getItem('token');
+      const r = await fetch('/api/tickets', {method:'POST', headers:{'Content-Type':'application/json','Idempotency-Key':crypto.randomUUID(), ...(token? { Authorization:'Bearer '+token } : {})}, body: JSON.stringify(data)});
+      const j = await r.json();
+      if(j.ticket){ location.href = '/tickets/'+j.ticket.id; } else { alert(JSON.stringify(j)); }
+    }
+  </script>
+</head>
+<body>
+  <div class="nav">
+    <div class="brand"><span class="badge">H</span> HelpDesk Mini</div>
+    <div class="actions">
+      <a href="/tickets">All Tickets</a>
+    </div>
+  </div>
+  <div class="container grid">
+    <div class="card">
+      <h2 class="section-title">Create Ticket</h2>
+      <form class="stack" onsubmit="submitForm(event)">
+        <div class="row">
+          <div class="col">
+            <label>Title</label>
+            <input id="title" required placeholder="Short summary" />
+          </div>
+          <div class="col">
+            <label>Priority</label>
+            <select id="priority">
+              <option>low</option>
+              <option selected>medium</option>
+              <option>high</option>
+              <option>urgent</option>
+            </select>
+          </div>
+        </div>
+        <label>Description</label>
+        <textarea id="description" rows="6" required placeholder="Describe the issue"></textarea>
+        <div>
+          <button class="btn" type="submit">Create Ticket</button>
+        </div>
+      </form>
+    </div>
+    <div class="footer-space"></div>
+  </div>
+</body>
+</html>
+
+
